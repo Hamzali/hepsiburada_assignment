@@ -19,9 +19,20 @@ defmodule Product do
   end
 
   @doc """
-  Returns the product with given code
+  Returns a product price and stock with the given code.
+
+  ## Parameters
+    - code: String Unique product identification code.
+
+  ## Examples
+    iex> Product.create_product("P03", 100, 200)
+    iex> Product.get_product_info("P03")
+    {100, 200}
+
+    iex> Product.get_product_info("SOME_VALUE")
+    nil
   """
-  @spec get_product_info(String.t()) :: {:reply, Tupele.t()}
+  @spec get_product_info(String.t()) :: Tupele.t() | nil
   def get_product_info(code) do
     GenServer.call(:product, {:get_product_info, code})
   end
@@ -38,7 +49,7 @@ defmodule Product do
   ## Examples
 
     iex> Product.create_product("P1", 100, 100)
-    {:ok, "P1"}
+    :ok
 
   """
   @spec create_product(String.t(), Float.t(), Integer.t()) :: :ok | {:error, String.t()}
@@ -56,7 +67,7 @@ defmodule Product do
     product = Map.get(products, code)
     if product === nil do
       info("Product with code: #{code} price: #{price} stock: #{stock} is created.")
-      {:reply, {:ok, code}, Map.put(products, code, {price, stock})}
+      {:reply, :ok, Map.put(products, code, {price, stock})}
     else
       {:reply, {:error, "Product is already created."}, products}
     end
