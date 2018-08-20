@@ -1,3 +1,4 @@
+# Turnover is total gain in a duration of time.
 defmodule Campaign do
   use GenServer
   import Logger, only: [info: 1]
@@ -19,7 +20,26 @@ defmodule Campaign do
   end
 
   @doc """
-  Creates a campaign woth given parameters.
+  Returns details of a campaign.
+
+  ## Parameters
+    - name: String Cmapaing name.
+
+  ## Examples
+    iex> Product.create_product("P22", 10.5, 1000)
+    iex> Campaign.create_campaign("TEST_CAMPAIGN_1", "P22", 4, 30, 100)
+    iex> Campaign.get_campaign_info("TEST_CAMPAIGN_1")
+    {"P22", 4, 30, 100, 0, 0, 0}
+    iex> Campaign.get_campaign_info("SOME_VALUE")
+    nil
+  """
+  @spec get_campaign_info(String.t()) :: Tuple.t() | {:error, String.t()}
+  def get_campaign_info(name) do
+    GenServer.call(:campaign, {:get_campaign_info, name})
+  end
+
+  @doc """
+  Creates a campaign with given parameters.
 
   ## Parameters
     - name: String Cmapaing name.
@@ -47,6 +67,10 @@ defmodule Campaign do
   end
 
   # OTP Handlers
+  def handle_call({:get_campaign_info, name}, _from, campaigns) do
+    {:reply, campaigns[name], campaigns}
+  end
+
   def handle_call(
         {:create_campaign, name, product_code, duration, price_limit, target_sales_count},
         _from,
@@ -72,7 +96,7 @@ defmodule Campaign do
              Map.put(
                campaigns,
                name,
-               {product_code, duration, price_limit, target_sales_count}
+               {product_code, duration, price_limit, target_sales_count, 0, 0, 0}
              )}
         end
       end)
