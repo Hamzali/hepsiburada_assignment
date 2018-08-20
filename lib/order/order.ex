@@ -45,13 +45,10 @@ defmodule Order do
     iex> Product.create_product("P12", 100, 100)
     iex> Product.create_product("P13", 100, 100)
     iex> Order.create_order("P12", 10)
-    # Has some orders and product exists.
     iex> Order.get_product_orders("P12")
     [10]
-    # No orders yet but product exists.
     iex> Order.get_product_orders("P13")
     []
-    # Invalid product code.
     iex> Order.get_product_orders("SOME_VALUE")
     {:error, "No such product exists."}
   """
