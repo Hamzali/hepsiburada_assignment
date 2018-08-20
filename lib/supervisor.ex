@@ -9,7 +9,8 @@ defmodule Hepsiburada.Supervisor do
   def init(:ok) do
     children = [
       supervisor(Product.Supervisor, []),
-      supervisor(Order.Supervisor, [])
+      supervisor(Order.Supervisor, []),
+      supervisor(Campaign.Supervisor, [])
     ]
 
     Supervisor.init(children, strategy: :one_for_all)
