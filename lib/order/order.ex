@@ -1,20 +1,18 @@
 defmodule Order do
   use GenServer
-  import Logger, only: [info: 1]
 
   @moduledoc """
   Product data model and operations.
+
+  ## Data Structure
+    %{ product_code => [ { quantity, campaigns, created_at } ] }
   """
 
   def start_link do
     GenServer.start_link(__MODULE__, %{}, name: :order)
   end
 
-  @doc """
-  Initializes product gen server.
-  """
   def init(_args) do
-    info("initialized orders")
     {:ok, %{}}
   end
 
@@ -46,7 +44,7 @@ defmodule Order do
     iex> Product.create_product("P13", 100, 100)
     iex> Order.create_order("P12", 10)
     iex> Order.get_product_orders("P12")
-    [10]
+    [{10, %{}, 10}]
     iex> Order.get_product_orders("P13")
     []
     iex> Order.get_product_orders("SOME_VALUE")
@@ -61,12 +59,13 @@ defmodule Order do
   def handle_call({:create_order, product_code, quantity}, _from, orders) do
     result =
       Utils.product_check(product_code, fn ->
-        info("Order is created, product: #{product_code} quantity: #{quantity}")
+        {_, _, campaigns, _} = Product.get_product_info(product_code)
+        new_order = {quantity, campaigns, TimeState.get_current_time()}
 
         if orders[product_code] === nil do
-          {:ok, Map.put(orders, product_code, [quantity])}
+          {:ok, Map.put(orders, product_code, [new_order])}
         else
-          {:ok, %{orders | product_code => [orders[product_code] | quantity]}}
+          {:ok, %{orders | product_code => [orders[product_code] | new_order]}}
         end
       end)
 

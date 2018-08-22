@@ -8,9 +8,6 @@ defmodule TimeState do
     GenServer.start_link(__MODULE__, 0, name: :time_state)
   end
 
-  @doc """
-  Initializes products gen server.
-  """
   def init(_args) do
     {:ok, 0}
   end
@@ -34,10 +31,6 @@ defmodule TimeState do
 
   @doc """
   Returns current time state.
-
-  ## Examples
-    iex> TimeState.get_current_time()
-    0
   """
   def get_current_time do
     GenServer.call(:time_state, {:get_current_time})
