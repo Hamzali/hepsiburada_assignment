@@ -1,6 +1,8 @@
 defmodule Campaign.Supervisor do
   use Supervisor
 
+  @moduledoc false
+
   def start_link do
     Supervisor.start_link(__MODULE__, :ok)
   end

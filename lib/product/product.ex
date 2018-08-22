@@ -8,6 +8,11 @@ defmodule Product do
   %{ code => { price, stock, %{ campaign_name => discount_amount },  created_at } }
   """
 
+  @typedoc """
+  Basic product info.
+  """
+  @type product :: { float, integer, Map.t(), integer }
+
   def start_link do
     GenServer.start_link(__MODULE__, %{}, name: :product)
   end
@@ -30,7 +35,7 @@ defmodule Product do
     iex> Product.get_product_info("SOME_VALUE")
     nil
   """
-  @spec get_product_info(String.t()) :: Tupele.t() | nil
+  @spec get_product_info(String.t()) :: product | nil
   def get_product_info(code) do
     GenServer.call(:product, {:get_product_info, code})
   end
@@ -82,6 +87,11 @@ defmodule Product do
     GenServer.call(:product, {:remove_campaign, code, campaign})
   end
 
+  @spec update_stock(String.t(), Integer.t()) :: :ok | {:error, String.t()}
+  def update_stock(code, amount) do
+    GenServer.call(:product, {:update_stock, code, amount})
+  end
+
   # OTP handlers
   def handle_call({:get_product_info, code}, _from, products) do
     product = Map.get(products, code)
@@ -129,6 +139,23 @@ defmodule Product do
       else
         {:reply, :ok,
          %{products | code => {price, stock, Map.delete(campaigns, campaign), created_at}}}
+      end
+    end
+  end
+
+  def handle_call({:update_stock, code, amount}, _from, products) do
+    product = Map.get(products, code)
+
+    if product === nil do
+      {:reply, {:error, "Cannot update stock of a non existant product."}, products}
+    else
+      {price, stock, campaigns, created_at} = product
+
+      if amount > stock do
+        {:reply, {:error, "Product stock is insufficient."}, products}
+      else
+        {:reply, :ok,
+         %{products | code => {price, stock - amount, campaigns, created_at}}}
       end
     end
   end

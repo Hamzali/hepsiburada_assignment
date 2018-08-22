@@ -1,5 +1,6 @@
 defmodule TimeState do
   use GenServer
+
   @moduledoc """
   Contains time state and manipulation methods.
   """

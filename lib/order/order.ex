@@ -2,11 +2,16 @@ defmodule Order do
   use GenServer
 
   @moduledoc """
-  Product data model and operations.
+  Order data model and operations.
 
   ## Data Structure
-    %{ product_code => [ { quantity, campaigns, created_at } ] }
+    %{ product_code => [ { quantity, price, [campaign1, campaign2], created_at } ] }
   """
+  @typedoc """
+  Basic order info.
+  """
+  @type order :: {integer, float, List.t(), integer}
+  @type order_list :: [order]
 
   def start_link do
     GenServer.start_link(__MODULE__, %{}, name: :order)
@@ -44,13 +49,13 @@ defmodule Order do
     iex> Product.create_product("P13", 100, 100)
     iex> Order.create_order("P12", 10)
     iex> Order.get_product_orders("P12")
-    [{10, %{}, 10}]
+    [{10, 100, [], 10}]
     iex> Order.get_product_orders("P13")
     []
     iex> Order.get_product_orders("SOME_VALUE")
     {:error, "No such product exists."}
   """
-  @spec get_product_orders(String.t()) :: List.t() | {:error, String.t()}
+  @spec get_product_orders(String.t()) :: order_list | {:error, String.t()}
   def get_product_orders(product_code) do
     GenServer.call(:order, {:get_orders, product_code})
   end
@@ -59,13 +64,20 @@ defmodule Order do
   def handle_call({:create_order, product_code, quantity}, _from, orders) do
     result =
       Utils.product_check(product_code, fn ->
-        {_, _, campaigns, _} = Product.get_product_info(product_code)
-        new_order = {quantity, campaigns, TimeState.get_current_time()}
+        case Product.update_stock(product_code, quantity) do
+          :ok ->
+            {price, _, campaigns, _} = Product.get_product_info(product_code)
+            # calculate the order unit price with campaign informations.
+            campaign_names = Map.keys(campaigns)
+            discounted_price = Enum.reduce(campaign_names, price, fn(campaign_name, acc) -> acc - (price * (campaigns[campaign_name] / 100)) end)
+            new_order = {quantity, discounted_price, campaign_names, TimeState.get_current_time()}
 
-        if orders[product_code] === nil do
-          {:ok, Map.put(orders, product_code, [new_order])}
-        else
-          {:ok, %{orders | product_code => [orders[product_code] | new_order]}}
+            if orders[product_code] === nil do
+              {:ok, Map.put(orders, product_code, [new_order])}
+            else
+              {:ok, %{orders | product_code => [orders[product_code] | new_order]}}
+            end
+          error -> error
         end
       end)
 

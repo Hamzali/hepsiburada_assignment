@@ -68,7 +68,7 @@ defmodule HepsiburadaAssignment do
 
   defp handle_commands(["increase_time", amount]) do
     String.to_integer(amount) |> TimeState.increase_time()
-    # TODO: Update product price and campaign info.
+    Campaign.update_campaigns()
     "Time is #{TimeState.get_current_time()}"
   end
 
@@ -108,8 +108,8 @@ defmodule HepsiburadaAssignment do
 
       {:ok, data} ->
         String.split(data, "\n")
-        |> Enum.map(&String.split(&1, " "))
-        |> Enum.map(&handle_commands(&1))
+        |> Enum.map(&(String.split(&1, " ") |> handle_commands))
+        # |> Enum.map(&handle_commands(&1))
         |> Enum.join("\n")
         |> write_output
     end

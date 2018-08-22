@@ -1,6 +1,7 @@
-
 defmodule Product.Supervisor do
   use Supervisor
+
+  @moduledoc false
 
   def start_link(opts) do
     Supervisor.start_link(__MODULE__, :ok, opts)
@@ -12,7 +13,7 @@ defmodule Product.Supervisor do
 
   def init(:ok) do
     children = [
-        worker(Product, [])
+      worker(Product, [])
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

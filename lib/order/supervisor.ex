@@ -1,6 +1,8 @@
 
 defmodule Order.Supervisor do
   use Supervisor
+  
+  @moduledoc false
 
   def start_link(opts) do
     Supervisor.start_link(__MODULE__, :ok, opts)
