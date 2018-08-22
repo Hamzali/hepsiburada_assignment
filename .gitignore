@@ -23,3 +23,7 @@ erl_crash.dump
 hepsiburada_assignment-*.tar
 
 .elixir_ls
+
+hepsiburada_assignment
+test.txt
+output.txt
