@@ -164,6 +164,7 @@ defmodule Campaign do
 
     # check if campaign is still active.
     if current_time - created_at >= duration do
+      Product.remove_campaign(product_code, product_code)
       Map.put(new_campaigns, name, campaign)
     else
       orders =
